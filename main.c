@@ -15,6 +15,9 @@ int main()
 
     while(1)
     {
+        // Prompt
+        printf("$ ");
+
         // Get user input
         fgets(line, 128, stdin);
         line[strlen(line) - 1] = '\0';
