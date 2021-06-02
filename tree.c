@@ -395,9 +395,6 @@ int save(char *filename)
 // Construct a file system tree from the given file
 int reload(char *filename)
 {
-    // Reset tree
-    initializeTree();
-
     // Open file
     FILE *fp = fopen(filename, "r");
     if (fp == NULL)
@@ -405,6 +402,9 @@ int reload(char *filename)
         printf("ERROR: File not found.\n");
         return 1;
     }
+        
+    // Reset tree
+    initializeTree();
 
     // Read file line by line
     char line[128], type[2], pathname[128];
