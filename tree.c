@@ -264,8 +264,6 @@ int cd(char *pathname)
 // List the directory contents of pathname, or CWD if no pathname
 int ls(char *pathname)
 {
-    // TODO: If no pathname, list contents of cwd
-
     Node *dir = searchDir(pathname);
 
     if (dir == NULL)
@@ -284,22 +282,81 @@ int ls(char *pathname)
     return 0;
 }
 
-// Print the absolute pathname of CWD
+void pwdRecurse(Node* current)
+{
+    // Base case
+    if (strcmp(current->name, "/") == 0)
+    {
+        printf("/");
+        return;
+    }
+    pwdRecurse(current->parent);
+    printf("%s/", current->name);
+}
+
+// Print the absolute pathname of CWD (does not use pathname argument)
 int pwd(char *pathname)
 {
-
+    pwdRecurse(cwd);
+    printf("\n");
 }
 
 // Create a FILE node on the given pathname
 int creat(char *pathname)
 {
+    // Separate pathname into a directory name and basename
+    char dname[64], bname[64];
+    dirAndBaseName(pathname, dname, bname);
 
+    // Search for directory
+    Node *dir = searchDir(dname);
+    if (dir == NULL)
+    {
+        printf("ERROR: Directory does not exist.\n");
+        return 1;
+    }
+
+    // Check if a node with the same basename already exists
+    Node *bnameNode = searchSibling(bname, dir->child);
+    if (bnameNode != NULL)
+    {
+        printf("ERROR: A directory or file of the same name already exists.\n");
+        return 1;
+    }
+
+    // Add file node
+    Node *newFile = createNode(bname, 'F', dir);
+    insertSibling(&dir->child, newFile);
+    return 0;
 }
 
 // Remove the FILE node of the given pathname
 int rm(char *pathname)
 {
+    // Separate pathname into a directoryname and basename
+    char dname[64], bname[64];
+    dirAndBaseName(pathname, dname, bname);
 
+    // Search for directory
+    Node *dir = searchDir(dname);
+    if (dir == NULL)
+    {
+        printf("ERROR: Directory does not exist.\n");
+        return 1;
+    }
+
+    // Search and checks
+    Node *file = searchSibling(bname, dir->child);
+    if (file == NULL || file->type == 'D')
+    {
+        printf("ERROR: File does not exist.\n");
+        return 1;
+    }
+
+    // Delete file
+    file = deleteSibling(&(dir->child), bname);
+    free(file);
+    return 0;
 }
 
 // Save the current file system three as a file
@@ -317,15 +374,23 @@ int reload(char *filename)
 // Show a menu of valid commands, does not use pathname argument
 int menu(char *pathname)
 {
-    printf("mkdir, \n");
-    printf("ls, \n");
-    printf("cd, \n");
-    printf("rmdir, \n");
+    printf("mkdir [pathname]\n");
+    printf("rmdir [pathname]\n");
+    printf("ls [pathname]?\n");
+    printf("cd [pathname]?\n");
+    printf("pwd\n");
+    printf("creat [pathname]\n");
+    printf("rm [pathname]\n");
+    printf("save [filename]\n");
+    printf("reload [filename]\n");
+    printf("menu\n");
+    printf("quit\n");
     return 0;
 }
 
 // Save the file system tree, then terminate the program
 int quit(char *pathname)
 {
-
+    save("fileSystemTree.txt");
+    exit(0);
 }

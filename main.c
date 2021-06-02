@@ -21,10 +21,11 @@ int main()
         // Get user input
         fgets(line, 128, stdin);
         line[strlen(line) - 1] = '\0';
+        pathname[0] = '\0';
 
         // Separate input in coommand and pathaname
         sscanf(line, "%s %s", command, pathname);
-        
+
         // Find and exeute coommand, it it exists
         int index = findCommand(command);
         if (index != -1)
