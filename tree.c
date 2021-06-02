@@ -359,16 +359,74 @@ int rm(char *pathname)
     return 0;
 }
 
-// Save the current file system three as a file
+void treeTraversal(FILE *fp, Node *node, char *dname)
+{
+    // Base case
+    if (node == NULL)
+    {
+        return;
+    }
+
+    // TODO: This is not very efficient, or safe
+    char pathname[128];
+    pathname[0] = '\0';
+    strcpy(pathname, dname);
+    strcat(pathname, "/");
+    strcat(pathname, node->name);
+
+    // Visit
+    fprintf(fp, "%c %s\n", node->type, pathname);
+
+    // Children
+    treeTraversal(fp, node->child, pathname);
+
+    // Sibling
+    treeTraversal(fp, node->sibling, dname);
+}
+
+// Save the current file system tree as a file
 int save(char *filename)
 {
-
+    FILE *fp = fopen(filename, "w");
+    treeTraversal(fp, root->child, "");
+    fclose(fp);
 }
 
 // Construct a file system tree from the given file
 int reload(char *filename)
 {
+    // Reset tree
+    initializeTree();
 
+    // Open file
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL)
+    {
+        printf("ERROR: File not found.\n");
+        return 1;
+    }
+
+    // Read file line by line
+    char line[128], type[2], pathname[128];
+    while (fgets(line, 128, fp))
+    {
+        line[strlen(line) - 1] = '\0';
+
+        // Separate line in type of node and pathname
+        sscanf(line, "%s %s", type, pathname);
+
+        // Insert node
+        if (type[0] == 'D')
+        {
+            mkdir(pathname);
+        }
+        else
+        {
+            creat(pathname);
+        }
+    }
+    fclose(fp);
+    return 0;
 }
 
 // Show a menu of valid commands, does not use pathname argument

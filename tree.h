@@ -50,7 +50,7 @@ int creat(char *pathname);
 // Remove the FILE node of the given pathname
 int rm(char *pathname);
 
-// Save the current file system three as a file
+// Save the current file system tree as a file
 int save(char *filename);
 
 // Construct a file system tree from the given file
